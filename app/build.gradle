@@ -1,0 +1,136 @@
+apply plugin: 'com.android.model.application'
+// "org.vackapi.jnilearn2"
+model{
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.1"
+        defaultConfig.with {
+            applicationId = "org.vackapi.jnilearn2"
+            minSdkVersion.apiLevel = 14
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "1.0"
+        }
+
+        tasks.withType(JavaCompile) {
+            //指定编译JDK版本
+            sourceCompatibility = JavaVersion.VERSION_1_7
+            targetCompatibility = JavaVersion.VERSION_1_7
+        }
+    }
+
+
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file( 'proguard-rules.pro'))
+        }
+    }
+
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file( 'proguard-rules.pro'))
+        }
+    }
+    android.ndk {
+        //其实这个执行没什么必要，但是我不想在c的代码全页标红，想要让他给我自动提示于是我写了上去
+        moduleName = "_"   //想不标红，有提示主要是这行
+        ldLibs.addAll(["android", "log"]) //不添加的话在c代码里面打log会出错的
+        cppFlags.add("-fno-rtti")
+    }
+    android.productFlavors {
+        //我这里不写，还是会生成很多个so，所以还是形式上写一个
+        create("arm7") {
+            ndk.abiFilters.add("armeabi-v7a")
+        }
+    }
+
+}
+//ndk-build脚本在这里开始
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.dependsOn CopyToJniLibs
+}
+task ndkBuild(type:Exec, description: 'Compile JNI source via NDK'){
+    println('executing ndkBuild')
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def ndkDir = properties.getProperty('ndk.dir')
+    println(ndkDir)
+    println("  excu   "+ "$ndkDir/ndk-build NDK_PROJECT_PATH=app\\libs APP_BUILD_SCRIPT=$projectDir.absolutePath\\app\\src\\main\\jni\\Android.mk NDK_APPLICATION_MK=$projectDir.absolutePath\\app\\src\\main\\jni\\Application.mk")
+    commandLine "$ndkDir/ndk-build.cmd","NDK_PROJECT_PATH=$projectDir.absolutePath\\build","APP_BUILD_SCRIPT=$projectDir.absolutePath\\src\\main\\jni\\Android.mk","NDK_APPLICATION_MK=$projectDir.absolutePath\\src\\main\\jni\\Application.mk"
+                                     //指定生成的obj和libs放置的目录        对应你自己的mk文件，下同
+}
+
+task CopyToJniLibs(type: Copy, dependsOn: 'ndkBuild', description: 'copy the native libs to jniLibs') {
+    from('build/libs')
+    into 'src/main/jniLibs/'
+    include '**/*.so'
+    println("copyed")
+}
+
+//如果是加载当个so库下面的配置没问题足够了；但是要是多个，那么就需要上面的代码
+/*model{
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.1"
+
+        defaultConfig.with {
+            applicationId = "org.vackapi.jnilearn2"
+            minSdkVersion.apiLevel = 14
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "1.0"
+        }
+        tasks.withType(JavaCompile) {
+            //指定编译JDK版本
+            sourceCompatibility = JavaVersion.VERSION_1_7
+            targetCompatibility = JavaVersion.VERSION_1_7
+        }
+    }
+
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file( 'proguard-rules.pro'))
+        }
+    }
+    android.ndk {
+        moduleName = "JNILearn"
+        ldLibs.addAll(["android", "log"])//不添加的话在c代码里面打log会出错的
+        cppFlags.add("-fno-rtti")
+    }
+    android.productFlavors {
+        // for detailed abiFilter descriptions, refer to "Supported ABIs" @
+        // https://developer.android.com/ndk/guides/abis.html#sa
+        create("arm") {
+            ndk.abiFilters.add("armeabi")
+        }
+        create("arm7") {
+            ndk.abiFilters.add("armeabi-v7a")
+        }
+        create("arm8") {
+            ndk.abiFilters.add("arm64-v8a")
+        }
+        create("x86") {
+            ndk.abiFilters.add("x86")
+        }
+        create("x86-64") {
+            ndk.abiFilters.add("x86_64")
+        }
+        create("mips") {
+            ndk.abiFilters.add("mips")
+        }
+        create("mips-64") {
+            ndk.abiFilters.add("mips64")
+        }
+        // To include all cpu architectures, leaves abiFilters empty
+        create("all")
+    }
+}*/
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:24.0.0-alpha2'
+}
