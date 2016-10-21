@@ -62,6 +62,7 @@ task ndkBuild(type:Exec, description: 'Compile JNI source via NDK'){
                                      //指定生成的obj和libs放置的目录        对应你自己的mk文件，下同
 }
 
+//在ndkbuild完成后把生成的so文件复制到jniLibs
 task CopyToJniLibs(type: Copy, dependsOn: 'ndkBuild', description: 'copy the native libs to jniLibs') {
     from('build/libs')
     into 'src/main/jniLibs/'
