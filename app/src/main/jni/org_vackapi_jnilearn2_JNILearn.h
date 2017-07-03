@@ -5,9 +5,6 @@
 #ifndef _Included_org_vackapi_jnilearn2_JNILearn
 #define _Included_org_vackapi_jnilearn2_JNILearn
 
-
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif

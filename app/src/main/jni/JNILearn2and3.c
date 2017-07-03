@@ -4,6 +4,7 @@
 
 #include <jni.h>
 #include <android/log.h>
+#include <stddef.h>
 
 JNIEXPORT void JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_dataType(JNIEnv *env, jobject instance) {
@@ -61,15 +62,91 @@ Java_org_vackapi_jnilearn2_JNILearn2and3_dataType(JNIEnv *env, jobject instance)
 
 JNIEXPORT void JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_yinYongShuJu_1opear(JNIEnv *env, jobject instance) {
-
+    //3.4以前基本都在介绍基本数据类型
+    //3.4以后介绍的是引用数据类新
 }
+
+/**
+ * 3.4.1-1 创建一个字符串
+ */
+JNIEXPORT jstring JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_newJAVAString(JNIEnv *env, jobject instance) {
+    jstring javaString=(*env)->NewStringUTF(env,"New a JAVA String");
+    return javaString;
+}
+/**
+ * 3.4.1-2 java字符串转C字符串, 3.4.1-2释放字符串
+ */
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_java2CString(JNIEnv *env, jobject instance, jstring str_) {
+    const char *str = (*env)->GetStringUTFChars(env,str_, NULL);
+    __android_log_print(ANDROID_LOG_ERROR,"VACK",str);
+    (*env)->ReleaseStringUTFChars(env,str_, str);//释放字符串
+}
+
+/**
+ * 3.4.2数组操作
+ */
+
+JNIEXPORT jintArray JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray123(JNIEnv *env, jobject instance) {
+    // 1.创建数组,通过New<Type>Array函数可以在原生代码中创建数组实例,其中Type可以是Int,Char,Boolean
+    jintArray javaArray=(*env)->NewIntArray(env,10);
+    //在内存溢出的情况下New<Type>Array会返回NULL,所以判空
+    jint nativeArray[10];
+    if (0!=javaArray){
+        //现在可以使用数组
+        // 2.访问数组元素,JNI提供两种访问数组元素的方法,一种是将数组复制成C数组,另一种是让JNI提供直接指向数组元素的指针
+        // 3.对副本的操作,Get<Type>ArrayRegion函数将给定的的基本Java数组复制到给定的C数组中
+
+        (*env)->GetIntArrayRegion(env,javaArray,0,10,nativeArray);
+        //这样原生代码就可以像修改普通C数组一样修改数组元素了
+        int i;
+        for (i=0;i< sizeof(nativeArray)/sizeof(nativeArray[0]);i++){
+            nativeArray[i]=i;
+        }
+        //当修改完成可以使用Set<Type>ArrayRegion将C数组复制回给Java数组
+        (*env)->SetIntArrayRegion(env,javaArray,0,10,nativeArray);
+    }
+    return javaArray;
+    //当数组很大时,为了对java数组操作而复制数组会引发性能问题,在这种情况下,如果可能,原生代码应该只获取或设置数组元素区域而不是整个数组.
+    //另外,JNI提供了不同的函数集以获取数组元素而非其副本的指针
+}
+
+/*JNIEXPORT jintArray JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray123(JNIEnv *env, jobject instance) {
+
+}*/
 
 JNIEXPORT void JNICALL
-Java_org_vackapi_jnilearn2_JNILearn2and3_test(JNIEnv *env, jobject instance, jobject context,
-                                              jstring str_) {
-    const char *str = env->GetStringUTFChars(str_, 0);
-
-    // TODO
-
-    env->ReleaseStringUTFChars(str_, str);
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instance, jintArray array_) {
+    //4.直接对指针的操作,Get<Type>ArrayElements函数获取指向该数组元素的直接指针
+    jboolean isCopy;
+    jint* nativeDirectArray=(*env)->GetIntArrayElements(env,array_,&isCopy);
+    //JNI没有提供直接访问数组元素的指针,JNI要求原生代码用完后立即释放指针,并提供Release<Type>ArrayElements函数
+    int arrCount= (*env)->GetArrayLength(env,array_);
+    int i;
+    for(i=0;i<arrCount;i++){
+        __android_log_print(ANDROID_LOG_ERROR,"VACK","array[%d]=%d",i,nativeDirectArray[i]);
+    }
+    (*env)->ReleaseIntArrayElements(env,array_,nativeDirectArray,0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

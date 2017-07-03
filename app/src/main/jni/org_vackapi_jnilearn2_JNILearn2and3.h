@@ -4,6 +4,8 @@
 
 #ifndef _Included_org_vackapi_jnilearn2_JNILearn2and3
 #define _Included_org_vackapi_jnilearn2_JNILearn2and3
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,7 +17,19 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_vackapi_jnilearn2_JNILearn2and3_dataType
   (JNIEnv *, jobject);
 
-#ifdef __cplusplus
+JNIEXPORT jstring JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_newJAVAString(JNIEnv *env, jobject instance);
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_java2CString(JNIEnv *env, jobject instance, jstring str_);
+
+JNIEXPORT jintArray JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray123(JNIEnv *env, jobject instance);
 }
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instance, jintArray array_);
+
+
 #endif
 #endif
