@@ -15,7 +15,7 @@ extern "C" {
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_org_vackapi_jnilearn2_JNILearn2and3_dataType
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 JNIEXPORT jstring JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_newJAVAString(JNIEnv *env, jobject instance);
@@ -25,11 +25,10 @@ Java_org_vackapi_jnilearn2_JNILearn2and3_java2CString(JNIEnv *env, jobject insta
 
 JNIEXPORT jintArray JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray123(JNIEnv *env, jobject instance);
-}
 
 JNIEXPORT void JNICALL
-Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instance, jintArray array_);
-
-
+Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instance,
+                                                     jintArray array_);
+}
 #endif
 #endif
