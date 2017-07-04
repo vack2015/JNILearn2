@@ -5,7 +5,6 @@
 #ifndef _Included_org_vackapi_jnilearn2_JNILearn2and3
 #define _Included_org_vackapi_jnilearn2_JNILearn2and3
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,6 +28,19 @@ Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray123(JNIEnv *env, jobject inst
 JNIEXPORT void JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instance,
                                                      jintArray array_);
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_createBuffer(JNIEnv *env, jobject instance) ;
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_getBuffer(JNIEnv *env, jobject instance, jobject obj);
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_useField(JNIEnv *env, jobject instance) ;
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_useJavaMethod(JNIEnv *env, jobject instance);
+
 }
 #endif
 #endif

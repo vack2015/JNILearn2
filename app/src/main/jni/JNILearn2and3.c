@@ -5,6 +5,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include <stddef.h>
+#include <malloc.h>
 
 JNIEXPORT void JNICALL
 Java_org_vackapi_jnilearn2_JNILearn2and3_dataType(JNIEnv *env, jobject instance) {
@@ -130,6 +131,65 @@ Java_org_vackapi_jnilearn2_JNILearn2and3_operaArray4(JNIEnv *env, jobject instan
         __android_log_print(ANDROID_LOG_ERROR,"VACK","array[%d]=%d",i,nativeDirectArray[i]);
     }
     (*env)->ReleaseIntArrayElements(env,array_,nativeDirectArray,0);
+}
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_createBuffer(JNIEnv *env, jobject instance) {
+    //1.创建直接字节缓冲区
+    //nio在缓冲管理 大规模网络 文件io及字符集支持方面的性能有所改进.
+    // JNI提供了在原生代码中使用nio的函数.与数组相比NIO缓冲区的数据传递性能更好,更适合在原生代码和java之前传递大量数据
+    unsigned char* buffer=(unsigned char*) malloc(1024);
+    jobject directBuffer=(*env)->NewDirectByteBuffer(env,buffer,1024);
+    //原生方法中的内存分配已经超出了虚拟机的管理范围,且不能使用虚拟机的垃圾回收器回收原生方法中的内存.
+    // 原生函数应该通过释放未使用的内存分配以避免内存泄漏以避免内存泄漏
+}
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_getBuffer(JNIEnv *env, jobject instance, jobject directBuffer) {
+    //2.直接字节缓冲区获取
+    // java也能创建直接字节缓冲区,在原生代码中调用GetDirectBufferAddress函数可以获得原生字节数组内存地址
+    unsigned char* buffer=(unsigned char*)(*env)->GetDirectBufferAddress(env,directBuffer);
+}
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_useField(JNIEnv *env, jobject instance) {
+    //1.获得域id
+    // JNI提供了用域ID访问两类域的方法,可以通过给定的实力的class对象获取域ID,用GetObjectClass函数可以获得class对象
+    jclass class=(*env)->GetObjectClass(env,instance);//用引用对象获得类
+    //有两个获得域ID的函数,分别适用不同的域
+    jfieldID instanceFieldId=(*env)->GetFieldID(env,class,"instanceField","Ljava/lang/String;");//获取实例域id
+    jfieldID staticFieldId=(*env)->GetStaticFieldID(env,class,"staticField","Ljava/lang/String;");//获取静态域id
+    //2.获取域
+    // 在获得域ID之后,可以用Get<Type>Field函数获得实际的实例域
+    jstring instanceField=(*env)->GetObjectField(env,instance,instanceFieldId);
+    const char* c1=(*env)->GetStringUTFChars(env,instanceField,NULL);
+    //或是获得静态域
+    jstring staticField=(*env)->GetStaticObjectField(env,class,staticFieldId);//注意两个方法第二个参数不一样
+    const char* c2=(*env)->GetStringUTFChars(env,staticField,NULL);
+    __android_log_print(ANDROID_LOG_ERROR,"VACK",
+                        "%s/%s 获取单个域值需要调用两道三个JNI函数,这给程序带来不必要的负担,强烈建议将所需的参数传到 原生方法中"
+                        ,c1,c2);
+    (*env)->ReleaseStringChars(env,instanceField,c1);
+    (*env)->ReleaseStringChars(env,staticField,c2);
+}
+
+JNIEXPORT void JNICALL
+Java_org_vackapi_jnilearn2_JNILearn2and3_useJavaMethod(JNIEnv *env, jobject instance) {
+    jclass class=(*env)->GetObjectClass(env,instance);
+    //1.获取方法id
+    jmethodID instanceMethodId=(*env)->GetMethodID(env,class,"instanceMethod","()Ljava/lang/Object;");
+    jmethodID staticMethodId=(*env)->GetStaticMethodID(env,class,"staticMethod","()Ljava/lang/Object;");
+    //2.调用方法,以方法id为参数通过Call<Type>Method类函数,调用实例方法
+    __android_log_print(ANDROID_LOG_ERROR,"VACK","1");
+    jstring instanceMethodRes=(*env)->CallObjectMethod (env,instance,instanceMethodId);
+    //或通过CallStatic<Type>Method类函数调用静态方法
+    __android_log_print(ANDROID_LOG_ERROR,"VACK","2");
+    jstring staticMethodRes=(*env)->CallStaticObjectMethod(env,class,staticMethodId);
+    __android_log_print(ANDROID_LOG_ERROR,"VACK","3");
+    const  char* c1=(*env)->GetStringUTFChars(env,instanceMethodRes,NULL);
+    const  char* c2=(*env)->GetStringUTFChars(env,staticMethodRes,NULL);
+    __android_log_print(ANDROID_LOG_ERROR,"VACK","%s/%s",c1,c2);
+    //java和原生代码间的转换是代价较大的操作,强烈建议规划好java和原生代码的任务,以最小化这种操作
 }
 
 

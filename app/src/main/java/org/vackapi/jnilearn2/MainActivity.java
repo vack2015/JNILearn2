@@ -1,8 +1,11 @@
 package org.vackapi.jnilearn2;
 
+import android.animation.ObjectAnimator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,5 +34,11 @@ public class MainActivity extends AppCompatActivity {
         int[] arr={789,461,561,56,1,6,415};
         jni2and3.operaArray4(arr);
 
+        jni2and3.createBuffer();
+        ByteBuffer bb=ByteBuffer.allocate(1024);
+        jni2and3.getBuffer(bb);
+
+        jni2and3.useField();
+        jni2and3.useJavaMethod();
     }
 }
